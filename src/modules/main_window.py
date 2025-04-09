@@ -20,6 +20,7 @@ from modules.notepad import Notepad
 from modules.image_viewer import ImageViewer
 from modules.pdf_viewer import PDFViewer
 from modules.ai_chat import AIChat
+from modules.settings import SettingsDialog
 
 
 class MainWindow(QMainWindow):
@@ -108,6 +109,13 @@ class MainWindow(QMainWindow):
         home_action = demo_menu.addAction("ホーム")
         home_action.triggered.connect(self.show_welcome_screen)
 
+        # Add separator
+        demo_menu.addSeparator()
+
+        # Add Settings menu option
+        settings_action = demo_menu.addAction("設定")
+        settings_action.triggered.connect(self.open_settings)
+
     def open_notepad(self):
         """
         Opens the notepad application.
@@ -137,3 +145,10 @@ class MainWindow(QMainWindow):
         Show the welcome screen.
         """
         self.stacked_widget.setCurrentIndex(0)
+
+    def open_settings(self):
+        """
+        Opens the settings dialog.
+        """
+        dialog = SettingsDialog(self)
+        dialog.exec()

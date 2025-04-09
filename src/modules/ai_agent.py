@@ -12,6 +12,9 @@ from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, MessagesState, END
 
+# Import app config
+from modules.config import config
+
 
 class AIAgent:
     """
@@ -28,18 +31,18 @@ class AIAgent:
         self.model = None
         self.agent = None
 
-        # Check for API key
-        api_key = os.environ.get("OPENAI_API_KEY")
+        # Check for API key using config
+        api_key = config.OPEN_AI_API_KEY
         if not api_key:
             print(
-                "Warning: OPENAI_API_KEY environment variable not set. AI chat functionality will be limited."
+                "Warning: OPEN_AI_API_KEY is not set in config. AI chat functionality will be limited."
             )
 
         try:
-            # Initialize the model
+            # Initialize the model using config values
             self.model = ChatOpenAI(
                 api_key=api_key,
-                model="gpt-4o-mini",
+                model=config.AI_MODEL_NAME,
                 temperature=0.7,
             )
 
@@ -88,7 +91,7 @@ class AIAgent:
             AI response as a string
         """
         if not self.model:
-            return "APIキーが設定されていないため、応答できません。OPENAI_API_KEYを環境変数に設定してください。"
+            return "APIキーが設定されていないため、応答できません。設定画面でAPIキーを設定してください。"
 
         try:
             # Add user message to history
