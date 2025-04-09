@@ -15,10 +15,17 @@ def main():
     Attributes:
         None
     """
-    app = QApplication(sys.argv)
-    main_window = MainWindow()
-    main_window.show()
-    sys.exit(app.exec())
+    try:
+        app = QApplication(sys.argv)
+        main_window = MainWindow()
+        main_window.show()
+        sys.exit(app.exec())
+    except Exception as e:
+        import traceback
+
+        with open("error_log.txt", "w") as f:
+            f.write(f"Error: {e}\n")
+            f.write(traceback.format_exc())
 
 
 if __name__ == "__main__":
