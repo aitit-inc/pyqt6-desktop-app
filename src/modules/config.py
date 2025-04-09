@@ -18,7 +18,7 @@ class AppConfig(BaseSettings):
 
     # OpenAI API settings
     OPEN_AI_API_KEY: Optional[str] = None
-    AI_MODEL_NAME: str = "gpt-4o-mini"
+    AI_MODEL_NAME: str = "gpt-4o"
 
     # Application paths
     APP_DIR: Path = Path(__file__).parent.parent.parent

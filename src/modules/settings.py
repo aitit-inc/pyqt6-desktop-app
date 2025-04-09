@@ -51,20 +51,31 @@ class SettingsDialog(QDialog):
 
         # Create AI Settings tab
         ai_tab = QWidget()
-        ai_layout = QFormLayout()
+        ai_layout = QVBoxLayout()
         ai_tab.setLayout(ai_layout)
+
+        # Form layout for inputs
+        form_layout = QFormLayout()
+        ai_layout.addLayout(form_layout)
 
         # OpenAI API Key field
         self.api_key_field = QLineEdit()
         self.api_key_field.setEchoMode(QLineEdit.EchoMode.Password)
-        ai_layout.addRow("OpenAI APIキー:", self.api_key_field)
+        self.api_key_field.setMinimumWidth(300)  # Set minimum width for API key field
+        form_layout.addRow("OpenAI APIキー:", self.api_key_field)
 
-        # AI Model dropdown
-        self.model_combobox = QComboBox()
-        ai_models = ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"]
-        for model in ai_models:
-            self.model_combobox.addItem(model)
-        ai_layout.addRow("AIモデル:", self.model_combobox)
+        # AI Model text input
+        self.model_input = QLineEdit()
+        self.model_input.setMinimumWidth(300)  # Set minimum width for model input field
+        form_layout.addRow("AIモデル:", self.model_input)
+
+        # Add support note
+        support_note = QLabel(
+            "AIモデルは、gpt-4o, gpt-4o-mini, gpt-3.5-turbo "
+            "等がサポートされています（OpenAIの公式ドキュメントを参照）。"
+        )
+        support_note.setWordWrap(True)
+        ai_layout.addWidget(support_note)
 
         # Add tab to widget
         tab_widget.addTab(ai_tab, "AI設定")
@@ -83,17 +94,15 @@ class SettingsDialog(QDialog):
         if config.OPEN_AI_API_KEY:
             self.api_key_field.setText(config.OPEN_AI_API_KEY)
 
-        # Set current model in combobox
-        index = self.model_combobox.findText(config.AI_MODEL_NAME)
-        if index >= 0:
-            self.model_combobox.setCurrentIndex(index)
+        # Set current model in text input
+        self.model_input.setText(config.AI_MODEL_NAME)
 
     def save_settings(self):
         """Save settings from UI to config"""
         try:
             # Get values from UI
             api_key = self.api_key_field.text().strip()
-            model_name = self.model_combobox.currentText()
+            model_name = self.model_input.text().strip()
 
             # Update environment variables
             if api_key:
