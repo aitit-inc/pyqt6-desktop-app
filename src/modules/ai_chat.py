@@ -45,19 +45,22 @@ class MessageBubble(QFrame):
         self.setStyleSheet(
             f"background-color: {'#e1ffc7' if is_user else '#ffffff'}; "
             f"border-radius: 10px; "
-            f"padding: 10px; "
-            f"margin: {'0px 10px 0px 50px' if is_user else '0px 50px 0px 10px'}; "
+            f"padding: 5px; "
+            f"margin: 0px 5px 0px 5px; "
         )
 
         # Create layout
         layout = QVBoxLayout()
-        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setContentsMargins(2, 2, 2, 2)
 
         # Add message text
         self.message = QTextEdit()
         self.message.setReadOnly(True)
         self.message.setText(message_text)
-        self.message.setStyleSheet("background-color: transparent; border: none;")
+        # 文字色を濃いグレー(#222222)に設定（真っ黒より少し明るい）
+        self.message.setStyleSheet(
+            "background-color: transparent; border: none; color: #222222; padding: 0px;"
+        )
 
         # Adjust the message height based on content
         self.message.document().documentLayout().documentSizeChanged.connect(
@@ -74,7 +77,7 @@ class MessageBubble(QFrame):
     def adjust_text_edit_height(self):
         """Adjust QTextEdit height based on content"""
         doc_height = self.message.document().size().height()
-        self.message.setFixedHeight(int(doc_height + 10))
+        self.message.setFixedHeight(int(doc_height + 5))
 
 
 class AutoResizingTextEdit(QTextEdit):
