@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
     QMenuBar,
     QMenu,
     QApplication,
+    QStackedWidget,
 )
 from PyQt6.QtCore import Qt
 
@@ -33,26 +34,48 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("PyQt6 Desktop Application")
         self.setGeometry(100, 100, 800, 600)
 
-        self.initUI()
+        # Create stacked widget to hold all our applications
+        self.stacked_widget = QStackedWidget()
+        self.setCentralWidget(self.stacked_widget)
+
+        # Initialize applications
+        self.init_welcome_screen()
+        self.init_applications()
+
+        # Show welcome screen by default
+        self.stacked_widget.setCurrentIndex(0)
+
+        # Create menu bar
         self.create_menu_bar()
 
-    def initUI(self):
+    def init_welcome_screen(self):
         """
-        Initializes the user interface of the main window.
-        This method sets up the layout and widgets for the main window.
+        Initialize the welcome screen.
         """
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-
+        welcome_widget = QWidget()
         layout = QVBoxLayout()
-        layout.addStretch()  # 上部の余白を追加
-        self.welcome_label = QLabel("Welcome to the PyQt6 Desktop Application!")
-        layout.addWidget(
-            self.welcome_label, alignment=Qt.AlignmentFlag.AlignCenter
-        )  # 中央配置
-        layout.addStretch()  # 下部の余白を追加
 
-        central_widget.setLayout(layout)
+        layout.addStretch()
+        self.welcome_label = QLabel("Welcome to the PyQt6 Desktop Application!")
+        layout.addWidget(self.welcome_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addStretch()
+
+        welcome_widget.setLayout(layout)
+        self.stacked_widget.addWidget(welcome_widget)
+
+    def init_applications(self):
+        """
+        Initialize all application widgets.
+        """
+        # Create all application instances
+        self.notepad = Notepad(self)
+        self.image_viewer = ImageViewer(self)
+        self.pdf_viewer = PDFViewer(self)
+
+        # Add them to the stacked widget
+        self.stacked_widget.addWidget(self.notepad)
+        self.stacked_widget.addWidget(self.image_viewer)
+        self.stacked_widget.addWidget(self.pdf_viewer)
 
     def create_menu_bar(self):
         """
@@ -75,26 +98,30 @@ class MainWindow(QMainWindow):
         pdf_viewer_action = demo_menu.addAction("PDFビューア")
         pdf_viewer_action.triggered.connect(self.open_pdf_viewer)
 
+        # Add Home menu option
+        home_action = demo_menu.addAction("ホーム")
+        home_action.triggered.connect(self.show_welcome_screen)
+
     def open_notepad(self):
         """
         Opens the notepad application.
         """
-        self.welcome_label.setVisible(False)
-        self.notepad = Notepad(self)
-        self.setCentralWidget(self.notepad)
+        self.stacked_widget.setCurrentWidget(self.notepad)
 
     def open_image_viewer(self):
         """
         Opens the image viewer application.
         """
-        self.welcome_label.setVisible(False)
-        self.image_viewer = ImageViewer(self)
-        self.setCentralWidget(self.image_viewer)
+        self.stacked_widget.setCurrentWidget(self.image_viewer)
 
     def open_pdf_viewer(self):
         """
         Opens the PDF viewer application.
         """
-        self.welcome_label.setVisible(False)
-        self.pdf_viewer = PDFViewer(self)
-        self.setCentralWidget(self.pdf_viewer)
+        self.stacked_widget.setCurrentWidget(self.pdf_viewer)
+
+    def show_welcome_screen(self):
+        """
+        Show the welcome screen.
+        """
+        self.stacked_widget.setCurrentIndex(0)
