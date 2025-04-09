@@ -31,26 +31,57 @@ class AIAgent:
         self.model = None
         self.agent = None
 
-        # Check for API key using config
+        # Store current configuration values for change detection
+        self._current_api_key = None
+        self._current_model_name = None
+
+        # Initialize with current settings
+        self._update_configuration()
+
+    def _update_configuration(self) -> bool:
+        """
+        Check and update configuration if settings have changed.
+
+        Returns:
+            bool: True if configuration was updated, False otherwise
+        """
+        # Get current settings from config
         api_key = config.OPEN_AI_API_KEY
+        model_name = config.AI_MODEL_NAME
+
+        # Check if settings have changed
+        if api_key == self._current_api_key and model_name == self._current_model_name:
+            return False  # No changes
+
+        # Store new settings
+        self._current_api_key = api_key
+        self._current_model_name = model_name
+
+        # Reset model
+        self.model = None
+        self.agent = None
+
         if not api_key:
             print(
                 "Warning: OPEN_AI_API_KEY is not set in config. AI chat functionality will be limited."
             )
+            return True
 
         try:
             # Initialize the model using config values
             self.model = ChatOpenAI(
                 api_key=api_key,
-                model=config.AI_MODEL_NAME,
+                model=model_name,
                 temperature=0.7,
             )
 
             # Setup LangGraph for conversation management
             self._setup_langgraph()
+            return True
         except Exception as e:
             print(f"Error setting up AI agent: {e}")
             self.model = None
+            return True
 
     def _setup_langgraph(self):
         """Set up LangGraph for conversation flow"""
@@ -90,6 +121,9 @@ class AIAgent:
         Returns:
             AI response as a string
         """
+        # Check for configuration updates before processing
+        self._update_configuration()
+
         if not self.model:
             return "APIキーが設定されていないため、応答できません。設定画面でAPIキーを設定してください。"
 
