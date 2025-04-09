@@ -5,6 +5,7 @@ including its title, size, and layout.
 """
 
 from PyQt6.QtWidgets import QMainWindow, QLabel, QVBoxLayout, QWidget
+from PyQt6.QtCore import Qt
 
 
 class MainWindow(QMainWindow):
@@ -31,7 +32,9 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
         layout = QVBoxLayout()
+        layout.addStretch()  # 上部の余白を追加
         label = QLabel("Welcome to the PyQt6 Desktop Application!")
-        layout.addWidget(label)
+        layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)  # 中央配置
+        layout.addStretch()  # 下部の余白を追加
 
         central_widget.setLayout(layout)
