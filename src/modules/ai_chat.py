@@ -24,10 +24,8 @@ from PyQt6.QtCore import Qt, pyqtSignal, QSize
 from PyQt6.QtGui import QIcon, QPixmap, QFont, QColor
 from PyQt6.QtCore import QObject, QEvent
 
-# LangGraph imports
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
-from langchain_openai import ChatOpenAI
-from langgraph.graph import StateGraph, MessagesState, END
+# Import the AI agent
+from modules.ai_agent import AIAgent
 
 
 # Define message bubble widget for displaying chat messages
@@ -159,7 +157,9 @@ class AIChat(QWidget):
         """
         super().__init__(parent)
         self.setup_ui()
-        self.setup_ai_agent()
+
+        # Create AI agent instance
+        self.ai_agent = AIAgent()
 
         # Connect signal to slot
         self.response_received.connect(self.on_ai_response)
@@ -248,7 +248,7 @@ class AIChat(QWidget):
         """Process the message in a background thread"""
 
         def _process():
-            response = self.get_ai_response(message)
+            response = self.ai_agent.process_message(message)
             self.response_received.emit(response)
 
         Thread(target=_process, daemon=True).start()
@@ -256,78 +256,3 @@ class AIChat(QWidget):
     def on_ai_response(self, response):
         """Handle AI response from background thread"""
         self.chat_history.add_message(response, False)
-
-    def setup_ai_agent(self):
-        """Set up the AI agent using LangGraph"""
-        # Create message queue for chat history
-        self.messages = []
-
-        # Check for API key
-        api_key = os.environ.get("OPENAI_API_KEY")
-        if not api_key:
-            print(
-                "Warning: OPENAI_API_KEY environment variable not set. AI chat functionality will be limited."
-            )
-
-        try:
-            # Initialize the model
-            self.model = ChatOpenAI(
-                api_key=api_key,
-                model="gpt-4o-mini",
-                temperature=0.7,
-            )
-
-            # Setup LangGraph for conversation management
-            self.setup_langgraph()
-        except Exception as e:
-            print(f"Error setting up AI agent: {e}")
-            self.model = None
-
-    def setup_langgraph(self):
-        """Set up LangGraph for conversation flow"""
-        # Define state schema
-        workflow = StateGraph(MessagesState)
-
-        # Define the model calling function
-        def call_model(state):
-            messages = state["messages"]
-            if not self.model:
-                return {
-                    "messages": [
-                        AIMessage(
-                            content="APIキーが設定されていないため、応答できません。"
-                        )
-                    ]
-                }
-
-            response = self.model.invoke(messages)
-            return {"messages": [response]}
-
-        # Add nodes and edges
-        workflow.add_node("agent", call_model)
-        workflow.set_entry_point("agent")
-        workflow.add_edge("agent", END)  # None を END に修正
-
-        # Compile graph
-        self.agent = workflow.compile()
-
-    def get_ai_response(self, user_input):
-        """Get AI response for user input"""
-        if not self.model:
-            return "APIキーが設定されていないため、応答できません。OPENAI_API_KEYを環境変数に設定してください。"
-
-        try:
-            # Add user message to history
-            self.messages.append(HumanMessage(content=user_input))
-
-            # Get response
-            result = self.agent.invoke({"messages": self.messages})
-
-            # Extract response
-            ai_message = result["messages"][-1]
-            self.messages.append(ai_message)
-
-            return ai_message.content
-        except Exception as e:
-            print(f"Error getting AI response: {e}")
-            return f"エラーが発生しました: {str(e)}"
